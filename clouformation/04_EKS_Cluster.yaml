@@ -16,7 +16,7 @@ Parameters:
   WorkerInstanceType:
     Description: Ec2 Instance Type to be provisioned as EKS Worker Node
     Type: String
-    Default: t3.medium
+    Default: t3.micro
     AllowedValues:
       - t3.nano
       - t3.micro

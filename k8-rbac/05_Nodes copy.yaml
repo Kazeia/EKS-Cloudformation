@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    - rolearn: arn:aws:iam::142103498481:role/Iam-Stack-EksWorkerRole-MQBAIZEDULRE
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+  # mapUsers: |
+  #   - userarn: arn:aws:iam::142103498481:user/dev-zoluxiones-dsilva
+  #     username: dev-zoluxiones-dsilva
+  #     groups:
+  #       - system:masters

@@ -1,8 +1,3 @@
-#!/bin/bash
-# authors: susanto.b.n@gmail.com
-# Run All CloudFormation Create Stack for IAM, VPC, Bastion and EKS Cluster Templates
-
-
 ##################################### Functions Definitions
 function usage() {
     echo "usage: $0 [options]"
@@ -20,7 +15,7 @@ function usage() {
 }
 
 function aws_get_identity() {
-  USER_ARN=($(eval "aws " $PROFILE_PARAM " " $REGION_PARAM " sts get-caller-identity --query 'Arn' --output text"))
+  USER_ARN=($(eval "aws2 " $PROFILE_PARAM " " $REGION_PARAM " sts get-caller-identity --query 'Arn' --output text"))
   if [[ $USER_ARN == "arn:aws:iam::"* ]]; then
     echo "User : $USER_ARN"
     export USER_ARN
@@ -36,7 +31,7 @@ function aws_create_stack() {
   local TEMPLATE_FILE=$2
   local PARAMS=$3
   
-  local STACK_CREATE_ID=($(eval "aws " $PROFILE_PARAM " " $REGION_PARAM " cloudformation create-stack --stack-name " $STACK_NAME " --template-body " $TEMPLATE_FILE " " $PARAMS " --query 'StackId' --output text"))
+  local STACK_CREATE_ID=($(eval "aws2 " $PROFILE_PARAM " " $REGION_PARAM " cloudformation create-stack --stack-name " $STACK_NAME " --template-body " $TEMPLATE_FILE " " $PARAMS " --query 'StackId' --output text"))
   
   if [[ -z "$STACK_CREATE_ID" ]] ; then echo "$STACK_NAME Create Failed"; exit 1; fi
   echo "Creating $STACK_NAME : $STACK_CREATE_ID"
@@ -47,7 +42,7 @@ function aws_wait_create_stack() {
 
   local STACK_NAME=$1
   
-  STACK_STATUS=$(eval "aws " $PROFILE_PARAM " " $REGION_PARAM " cloudformation wait stack-create-complete --stack-name " $STACK_NAME)
+  STACK_STATUS=$(eval "aws2 " $PROFILE_PARAM " " $REGION_PARAM " cloudformation wait stack-create-complete --stack-name " $STACK_NAME)
   
   if [[ $STACK_STATUS == "" ]]; then
       echo "$STACK_NAME Created"
@@ -57,19 +52,19 @@ function aws_wait_create_stack() {
 }
 
 function aws_create_stack_IAM() {
-  aws_create_stack $IAM_STACK "file://./IamCft.yml" "--capabilities CAPABILITY_NAMED_IAM"
+  aws_create_stack $IAM_STACK "file://./01_IAM.yaml" "--capabilities CAPABILITY_NAMED_IAM"
 }
 
 function aws_create_stack_VPC() {
-  aws_create_stack $VPC_STACK "file://./VpcCft.yml"
+  aws_create_stack $VPC_STACK "file://./02_VPC.yaml"
 }
 
 function aws_create_stack_Bastion() {
-  aws_create_stack $BASTION_STACK "file://./BastionCft.yml" "--parameters ParameterKey=IamStackName,ParameterValue=$IAM_STACK ParameterKey=VpcStackName,ParameterValue=$VPC_STACK"
+  aws_create_stack $BASTION_STACK "file://./03_Bastion.yaml" "--parameters ParameterKey=IamStackName,ParameterValue=$IAM_STACK ParameterKey=VpcStackName,ParameterValue=$VPC_STACK"
 }
 
 function aws_create_stack_EKS() {
-  aws_create_stack $EKS_STACK "file://./Eks1ClusterCft.yml" "--parameters ParameterKey=IamStackName,ParameterValue=$IAM_STACK ParameterKey=VpcStackName,ParameterValue=$VPC_STACK"
+  aws_create_stack $EKS_STACK "file://./04_EKS_Cluster.yaml" "--parameters ParameterKey=IamStackName,ParameterValue=$IAM_STACK ParameterKey=VpcStackName,ParameterValue=$VPC_STACK"
 }
 
 ##################################### End Function Definitions

@@ -59,12 +59,42 @@ EKS Nodes: nodes config to EKS
 RBAC Role: Ec2 - ALB Ingress controller
 ALB Ingress Controller: Ruteo a los nodos.
 
+-----====-----
+HOW TO RUN:
+1. Mover se a la carpeta cloudformation
+2. Ejecutar deploy_all.sh, esto creara toda la infraestructura(Cluster EKS, Bastion, VPC, IAM)
+3. Agregar usuario X a EKSAccessGroup, para q tng accesso al cluster: aws2 iam add-user-to-group --user-name dev-zoluxiones-dsilva --group-name Iam-Stack-eks-group-EksAccessGroup
+4. Habilitar accesso a la herramienta kubectl
+5. Probar que se tiene accesso y esta habilitada la herramienta: kubectl get node, debe estar vacio
+
+---
+x. Modificar el script de 05_Nodes.yml y modificar la linea 8 y agregar el role ARN
+6. Registrar los nodos al EKS: 
+kubectl apply -f 05_Nodes.yaml
+7. Revisar los nodos estan corriendo: kubectl get nodes --watch
+8. Agregar el usuario al mapUsers del cluster: kubectl edit -n kube-system configmap/aws-auth
+anadir lo comentado en 05_Nodes.yaml
+9. Agregamos el usuario nuevo para q tng privilegios como el q creo el cluster:
+aws2 eks update-kubeconfig --name Cluster-Test-eks --profile dev-zoluxiones-dsilva
+
+---- opcional bastion
+# TODO: 
+
+---- Application
+1. Necesitamos vincular kubernetes RBAC Role y el ALB Ingress
+kubectl apply -f ./06_RBAC_Role.yaml
+2. Necesitamos actualizar el nombre del cluster, editar archivo 06_RBAC_Role.yaml, linea: --cluster-name=...
+y colocar el nombre del cluster EKS q hemos creado
+3. Ejecutamos nuestra aplicacion, en orden:
+ - namespace
+ - deployment
+ - service
+ - ingress
+4. Chekar el ALB Ingreess, demora mucho...:kubectl get ingress/2048-ingress -n 2048-game
 
 
-
-
-
-
+Nota: Si instalaste la version 2 de AWS CLI, entonces modifica el archivo ~/.kube/config, y modifica la siguiente instruccion:
+  command: aws -> command: aws2
 
 
 
